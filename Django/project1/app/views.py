@@ -7,26 +7,22 @@ from django.http import JsonResponse
 
 def htop_view(request):
     # Get system username
-    username = os.getlogin()
+    username = os.getenv('USER', 'codespace_user')
 
-    # Get current time in IST
+    # Get server time in IST
     ist = pytz.timezone('Asia/Kolkata')
     server_time = datetime.now(ist).strftime('%Y-%m-%d %H:%M:%S')
 
-    # Execute the 'top' command
+    # Run the htop command
     try:
-        result = subprocess.run(["top", "-b", "-n", "1"], capture_output=True, text=True)
-        top_output = result.stdout.split("\n")[:10]  # Show first 10 lines
+        result = subprocess.run(["htop", "-b"], capture_output=True, text=True, timeout=2)
+        top_output=subprocess.getoutput('top -b -n 1')
     except Exception as e:
-        top_output = [str(e)]
+        htop_output = [str(e)]
 
-    # Response JSON
-    response_data = {
-        "Name": "Sujan",  # Replace with your name
-        "Username": "codespace",
+    return JsonResponse({
+        "Name": "Your Full Name",  # Replace with your name
+        "Username": username,
         "Server Time": server_time,
-        "TOP Command Output": htop
-    }
-    return JsonResponse(response_data)
-
-# Create your views here.
+        "Top_output": top_output
+    })
